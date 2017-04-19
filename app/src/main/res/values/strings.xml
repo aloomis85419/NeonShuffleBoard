@@ -1,0 +1,29 @@
+<resources>
+    <string name="app_name">Neon Shuffle Board</string>
+
+    <array name="ColorSchemes">
+        <item>"Neon Blue Neon Red"</item>
+        <item>"Neon Red Neon Green"</item>
+        <item>"Neon Green Neon Blue</item>
+    </array>
+
+    <array name="NeonColors">
+
+        <item name="lightNeonBlue">#00f6fe</item>
+        <item name="neonRed">#f92b2f</item>
+        <item name="neonGreen">#83f52c</item>
+        <item name="neonYellow">#f9fe44</item>
+        <item name="lightNeonGreen">#a1fc38</item>
+        <item name="neonOrange">#ff891f</item>
+        <item name="neonBlue">#1bbee3</item>
+        <item name="neonPink">#ff38d1</item>
+        <item name="neonBright">#e1fde9</item>
+        <item name="paleNeonGreen">#ccff6a</item>
+        <item name="darkNeonOrange">#ff6d35</item>
+        <item name="darkNeonRed">#ff0049</item>
+        <item name="neonTeal">#00ebb3</item>
+        <item name="neonOlive">#d6cd16</item>
+        <item name="paleNeonPink">#ff4171</item>
+        <item name="paleNeonPink2">#ff006b</item>
+    </array>
+</resources>

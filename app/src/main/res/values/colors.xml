@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#3F51B5</color>
+    <color name="colorPrimaryDark">#303F9F</color>
+    <color name="colorAccent">#FF4081</color>
+    <color name="buttonTextColor">#fff500</color>
+    <color name="buttonBackgroundColor">#FD211D</color>
+
+
+
+
+    <color name="lightNeonBlue">#00f6fe</color>
+    <color name="neonRed">#f92b2f</color>
+    <color name="neonGreen">#83f52c</color>
+    <color name="neonYellow">#f9fe44</color>
+    <color name="lightneonGreen">#a1fc38</color>
+    <color name="neonOrange">#ff891f</color>
+    <color name="neonBlue">#1bbee3</color>
+    <color name="neonPink">#ff38d1</color>
+    <color name="neonBright">#e1fde9</color>
+    <color name="paleNeonGreen">#ccff6a</color>
+    <color name="darkNeonOrange">#ff6d35</color>
+    <color name="darkNeonRed">#ff0049</color>
+    <color name="neonTeal">#00ebb3</color>
+    <color name="neonOlive">#d6cd16</color>
+    <color name="paleNeonPink">#ff4171</color>
+    <color name="paleNeonPink2">#ff006b</color>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</resources>
