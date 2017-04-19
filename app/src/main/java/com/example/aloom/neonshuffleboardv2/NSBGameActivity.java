@@ -45,13 +45,21 @@ public class NSBGameActivity extends AppCompatActivity implements Cloneable{
     ImageView bluePuck2;
     ImageView bluePuck3;
     GestureDetector detector;
-    ImageView[]puckCycleList = {redPuck1,redPuck2,redPuck3,bluePuck1,bluePuck2,bluePuck3};
-
+    ImageView[] puckCycleList;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_nsbgame);
-        createAllPucks();
+        redPuck1 = (ImageView) findViewById(R.id.redPuck1);
+        redPuck2 = (ImageView) findViewById(R.id.redPuck2);
+        redPuck3 = (ImageView) findViewById(R.id.redPuck3);
+        bluePuck1 = (ImageView) findViewById(R.id.bluePuck1);
+        bluePuck2 = (ImageView) findViewById(R.id.bluePuck2);
+        bluePuck3 = (ImageView) findViewById(R.id.bluePuck3);
+        puckCycleList = new ImageView[]{redPuck1, redPuck2, redPuck3
+                , bluePuck1, bluePuck2, bluePuck3};
+        setupInitialPuckVisibility();
+        //setupInitialPuckVisibility();
         puckCycleList[0].setVisibility(View.VISIBLE);
         gameView = (ConstraintLayout)findViewById(R.id.nsbGame);
         detector = new GestureDetector(this, new CustomGestureListener());
@@ -64,59 +72,21 @@ public class NSBGameActivity extends AppCompatActivity implements Cloneable{
         flingDistance = (float) Math.sqrt((dx*dx)+(dy*dy));
     }
 
-    public void animatePuckPropertiesOnTouch(){
+    public void animatePuckPropertiesOnTouch() {
         //can change this line to allow player to select their puck color in future update
         //only initial values
-        setupInitialPuckVisibility();
-        puckCycleList[0].setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent ev) {
-                for (int puckID = 0; puckID < puckCycleList.length; puckID++) {
-                    setupInitialPuckVisibility();
-                    switch(puckID){
-
-                        case 0:
-                            puckClock = puckID;
-                            puckCycleList[puckID].setVisibility(View.VISIBLE);
-                            break;
-                        case 1:
-                            puckClock = puckID;
-                            puckCycleList[puckID].setVisibility(View.VISIBLE);
-                            break;
-                        case 2:
-                            puckClock = puckID;
-                            puckCycleList[puckID].setVisibility(View.VISIBLE);
-                            break;
-                        case 3:
-                            puckClock = puckID;
-                            puckCycleList[puckID].setVisibility(View.VISIBLE);
-                            break;
-                        case 4:
-                            puckClock = puckID;
-                            puckCycleList[puckID].setVisibility(View.VISIBLE);
-                            break;
-                        case 5:
-                            puckClock = puckID;
-                            puckCycleList[puckID].setVisibility(View.VISIBLE);
-                            break;
-                        case 6:
-                            puckClock = puckID;
-                            //reset
-                            puckID=0;
-                            animatePuckPropertiesOnTouch();
-                    }
-
-                    /*else if (i == 6){
-                        i=0; //reset until score is reached
-                    }*/
+        for (int puckID = 0; puckID < puckCycleList.length; puckID++) {
+            puckClock = puckID;
+            puckCycleList[puckID].setOnTouchListener(new View.OnTouchListener() {
+                                                         @Override
+                                                         public boolean onTouch(View v, MotionEvent ev) {
+                                                             puckCycleList[puckClock].setVisibility(View.VISIBLE);
+                                                             return detector.onTouchEvent(ev);
                 }
-                //}
-                return detector.onTouchEvent(ev);
             }
-        });
-        //cant be selected until redPlayers turn is finished. setClickable(true) once finished
+            );
+        }
     }
-
     public void waitTime(int seconds) {
         try {
             TimeUnit.SECONDS.sleep(seconds);
@@ -134,21 +104,6 @@ public class NSBGameActivity extends AppCompatActivity implements Cloneable{
             }
         });
         soundPlayer.start();
-    }
-
-    public void createAllPucks() {
-        redPuck1 = new ImageView(NSBGameActivity.this);
-        redPuck1 = (ImageView) findViewById(R.id.redPuck1);
-        redPuck2 = new ImageView(NSBGameActivity.this);
-        redPuck2 = (ImageView) findViewById(R.id.redPuck2);
-        redPuck3 = new ImageView(NSBGameActivity.this);
-        redPuck3 = (ImageView) findViewById(R.id.redPuck3);
-        bluePuck1 = new ImageView(NSBGameActivity.this);
-        bluePuck1 = (ImageView) findViewById(R.id.bluePuck1);
-        bluePuck2 = new ImageView(NSBGameActivity.this);
-        bluePuck2 = (ImageView) findViewById(R.id.bluePuck2);
-        bluePuck3 = new ImageView(NSBGameActivity.this);
-        bluePuck3 = (ImageView) findViewById(R.id.bluePuck3);
     }
 
     //excludes the first puck in the sequence
