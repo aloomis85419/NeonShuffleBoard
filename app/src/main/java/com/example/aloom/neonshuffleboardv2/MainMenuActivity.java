@@ -1,41 +1,27 @@
 package com.example.aloom.neonshuffleboardv2;
 
-import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
-import android.content.res.Resources;
-import android.graphics.Color;
-import android.graphics.Typeface;
-import android.graphics.drawable.AnimationDrawable;
-import android.graphics.drawable.ColorDrawable;
-import android.graphics.drawable.Drawable;
-import android.graphics.drawable.TransitionDrawable;
 import android.media.MediaPlayer;
 import android.net.Uri;
-import android.os.Handler;
-import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
-import android.util.Log;
+import android.support.v4.app.FragmentActivity;
 import android.view.View;
 import android.view.WindowManager;
-import android.view.animation.Animation;
 import android.widget.Button;
 import android.widget.VideoView;
-
-import java.util.ArrayList;
-import java.util.Timer;
 
 public class MainMenuActivity extends FragmentActivity {
     static int settingsRequestCode = 1;
     static int settingsResultCode;
     static int playGameRequestCode = 2;
     static int playGameResultCode;
+    static private MediaPlayer soundPlayer;
+    static private MediaPlayer musicLoop;
     Intent initiateActivity;
     VideoView gifVideo;
     private int videoPosition = 0;
     private int musicPostion = 0;
-    static  private MediaPlayer soundPlayer;
-    static private MediaPlayer musicLoop;
     private Button playGame;
     private Button gameSettings;
     private boolean isPlaying = true;
@@ -166,7 +152,5 @@ public class MainMenuActivity extends FragmentActivity {
         musicLoop.pause();
         startActivity(initiateActivity);
     }
-
-
 
 }

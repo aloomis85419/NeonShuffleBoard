@@ -3,7 +3,6 @@ package com.example.aloom.neonshuffleboardv2;
 
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
-import android.graphics.drawable.Drawable;
 import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.support.constraint.ConstraintLayout;
@@ -111,11 +110,54 @@ public class NSBGameActivity extends AppCompatActivity implements Cloneable{
                         i=0; //reset until score is reached
                     }*/
                 }
-            //}
-                return true;
+                //}
+                return detector.onTouchEvent(ev);
             }
         });
         //cant be selected until redPlayers turn is finished. setClickable(true) once finished
+    }
+
+    public void waitTime(int seconds) {
+        try {
+            TimeUnit.SECONDS.sleep(seconds);
+        } catch (Exception e) {
+            Log.d("Wait Method: ", "Cause: " + e.getCause());
+        }
+    }
+
+    private void playSound(int soundID) {
+        MediaPlayer soundPlayer = MediaPlayer.create(this, soundID);
+        soundPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+            @Override
+            public void onCompletion(MediaPlayer mp) {
+                mp.release();
+            }
+        });
+        soundPlayer.start();
+    }
+
+    public void createAllPucks() {
+        redPuck1 = new ImageView(NSBGameActivity.this);
+        redPuck1 = (ImageView) findViewById(R.id.redPuck1);
+        redPuck2 = new ImageView(NSBGameActivity.this);
+        redPuck2 = (ImageView) findViewById(R.id.redPuck2);
+        redPuck3 = new ImageView(NSBGameActivity.this);
+        redPuck3 = (ImageView) findViewById(R.id.redPuck3);
+        bluePuck1 = new ImageView(NSBGameActivity.this);
+        bluePuck1 = (ImageView) findViewById(R.id.bluePuck1);
+        bluePuck2 = new ImageView(NSBGameActivity.this);
+        bluePuck2 = (ImageView) findViewById(R.id.bluePuck2);
+        bluePuck3 = new ImageView(NSBGameActivity.this);
+        bluePuck3 = (ImageView) findViewById(R.id.bluePuck3);
+    }
+
+    //excludes the first puck in the sequence
+    public void setupInitialPuckVisibility() {
+        redPuck2.setVisibility(View.GONE);
+        redPuck3.setVisibility(View.GONE);
+        bluePuck1.setVisibility(View.GONE);
+        bluePuck2.setVisibility(View.GONE);
+        bluePuck3.setVisibility(View.GONE);
     }
 
     class CustomGestureListener implements GestureDetector.OnGestureListener{
@@ -210,47 +252,5 @@ public class NSBGameActivity extends AppCompatActivity implements Cloneable{
                 playSound(R.raw.realisticslide2);
             }
         }
-    }
-
-    public void waitTime(int seconds){
-        try{
-            TimeUnit.SECONDS.sleep(seconds);
-        }catch (Exception e){
-            Log.d("Wait Method: ","Cause: "+e.getCause());
-        }
-    }
-
-    private void playSound(int soundID){
-        MediaPlayer soundPlayer = MediaPlayer.create(this,soundID);
-        soundPlayer.setOnCompletionListener( new MediaPlayer.OnCompletionListener(){
-            @Override
-            public void onCompletion( MediaPlayer mp){
-                mp.release();
-            }
-        });
-        soundPlayer.start();
-    }
-
-    public void createAllPucks(){
-        redPuck1 = new ImageView(NSBGameActivity.this);
-        redPuck1 = (ImageView)findViewById(R.id.redPuck1);
-        redPuck2 = new ImageView(NSBGameActivity.this);
-        redPuck2 = (ImageView)findViewById(R.id.redPuck2);
-        redPuck3 = new ImageView(NSBGameActivity.this);
-        redPuck3 = (ImageView)findViewById(R.id.redPuck3);
-        bluePuck1 = new ImageView(NSBGameActivity.this);
-        bluePuck1 = (ImageView)findViewById(R.id.bluePuck1);
-        bluePuck2 = new ImageView(NSBGameActivity.this);
-        bluePuck2 = (ImageView)findViewById(R.id.bluePuck2);
-        bluePuck3 = new ImageView(NSBGameActivity.this);
-        bluePuck3 = (ImageView)findViewById(R.id.bluePuck3);
-    }
-    //excludes the first puck in the sequence
-    public void setupInitialPuckVisibility(){
-        redPuck2.setVisibility(View.GONE);
-        redPuck3.setVisibility(View.GONE);
-        bluePuck1.setVisibility(View.GONE);
-        bluePuck2.setVisibility(View.GONE);
-        bluePuck3.setVisibility(View.GONE);
     }
 }
