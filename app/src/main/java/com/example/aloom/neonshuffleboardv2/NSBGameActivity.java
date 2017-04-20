@@ -11,7 +11,6 @@ import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.animation.Animation;
 import android.view.animation.DecelerateInterpolator;
 import android.widget.ImageView;
 
@@ -19,7 +18,6 @@ import android.widget.ImageView;
 public class NSBGameActivity extends AppCompatActivity {
     private final String TAG = "PuckAnimatorActivity";
     AnimatorSet animatePuckProperties;
-    Animation.AnimationListener animState;
     ConstraintLayout gameView;
     float flingDistance;
     float downXPOS;
@@ -31,12 +29,15 @@ public class NSBGameActivity extends AppCompatActivity {
     float dx;
     float dy;
     int puckClock = 0;
+    int maxDuration = 30000;
     ImageView redPuck1;
     ImageView redPuck2;
     ImageView redPuck3;
     ImageView bluePuck1;
     ImageView bluePuck2;
     ImageView bluePuck3;
+    int maxScore = 30;
+    boolean maxScoreReached = false;
     View.OnTouchListener redPuck1Listener;
     View.OnTouchListener redPuck2Listener;
     View.OnTouchListener redPuck3Listener;
@@ -67,12 +68,27 @@ public class NSBGameActivity extends AppCompatActivity {
         listenForTouchOnBluePuck1();
         listenForTouchOnBluePuck2();
         listenForTouchOnBluePuck3();
+        //Round cycle
+        redPuck1.setClickable(true);
         redPuck1.setOnTouchListener(redPuck1Listener);
         redPuck2.setOnTouchListener(redPuck2Listener);
         redPuck3.setOnTouchListener(redPuck3Listener);
         bluePuck1.setOnTouchListener(bluePuck1Listener);
         bluePuck2.setOnTouchListener(bluePuck2Listener);
         bluePuck3.setOnTouchListener(bluePuck3Listener);
+        playGame();
+        //reset
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        Thread gameThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                playGame();
+            }
+        });
     }
 
     public void calculateDistance() {
@@ -114,7 +130,6 @@ public class NSBGameActivity extends AppCompatActivity {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 if (puckClock == 0) {
-                    redPuck1.setClickable(true);
                     return detector.onTouchEvent(event);
                 }
                 return false;
@@ -127,7 +142,6 @@ public class NSBGameActivity extends AppCompatActivity {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 if (puckClock == 1) {
-                    redPuck2.setClickable(true);
                     return detector.onTouchEvent(event);
                 }
                 return false;
@@ -141,7 +155,6 @@ public class NSBGameActivity extends AppCompatActivity {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 if (puckClock == 2) {
-                    redPuck3.setClickable(true);
                     return detector.onTouchEvent(event);
                 }
                 return false;
@@ -154,7 +167,6 @@ public class NSBGameActivity extends AppCompatActivity {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 if (puckClock == 3) {
-                    bluePuck1.setClickable(true);
                     return detector.onTouchEvent(event);
                 }
                 return false;
@@ -167,7 +179,6 @@ public class NSBGameActivity extends AppCompatActivity {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 if (puckClock == 3) {
-                    bluePuck2.setClickable(true);
                     return detector.onTouchEvent(event);
                 }
                 return false;
@@ -180,13 +191,58 @@ public class NSBGameActivity extends AppCompatActivity {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 if (puckClock == 5) {
-                    bluePuck3.setClickable(true);
                     return detector.onTouchEvent(event);
                 }
                 return false;
             }
         };
     }
+
+    public synchronized void playGame() {
+        if (puckClock == 0) {
+            puckCycleList[puckClock].setClickable(true);
+            puckCycleList[puckClock].setVisibility(View.VISIBLE);
+        }
+        if (puckClock == 1) {
+            puckCycleList[puckClock].setClickable(true);
+            puckCycleList[puckClock].setVisibility(View.VISIBLE);
+            disablePreviousClickableViews();
+        }
+        if (puckClock == 2) {
+            puckCycleList[puckClock].setClickable(true);
+            puckCycleList[puckClock].setVisibility(View.VISIBLE);
+            disablePreviousClickableViews();
+        }
+        if (puckClock == 3) {
+            puckCycleList[puckClock].setClickable(true);
+            puckCycleList[puckClock].setVisibility(View.VISIBLE);
+            disablePreviousClickableViews();
+        }
+        if (puckClock == 4) {
+            puckCycleList[puckClock].setClickable(true);
+            puckCycleList[puckClock].setVisibility(View.VISIBLE);
+            disablePreviousClickableViews();
+        }
+        if (puckClock == 5) {
+            puckCycleList[puckClock].setClickable(true);
+            puckCycleList[puckClock].setVisibility(View.VISIBLE);
+            disablePreviousClickableViews();
+        }
+    }
+
+    public void updateGameState() {
+
+
+    }
+
+    //disable clicks on used pucks
+    public void disablePreviousClickableViews() {
+        for (int i = puckClock - 1; i > 0; i--) {
+            puckCycleList[i].setClickable(false);
+        }
+    }
+
+
 
     class CustomGestureListener implements GestureDetector.OnGestureListener{
 
@@ -217,6 +273,7 @@ public class NSBGameActivity extends AppCompatActivity {
 
         @Override
         public boolean onFling(MotionEvent fingerDown, MotionEvent move, float velocityX, float velocityY) {
+
             Log.i(TAG, "____FLING INITIATED____");
             //animatePuck();
             downXPOS = fingerDown.getX();
@@ -237,6 +294,7 @@ public class NSBGameActivity extends AppCompatActivity {
             Log.d(TAG, "Velocity Y:  "+velocityY);
             calculateDistance();
             animatePuck();
+            puckClock++;
             return true;
         }
 
@@ -245,7 +303,6 @@ public class NSBGameActivity extends AppCompatActivity {
             Log.d(TAG, "SCREEN_BOTTOM_BOUNDS:  "+SCREEN_BOTTOM_BOUNDS);
             int SCREEN_TOP_BOUNDS = gameView.getTop();
             Log.d(TAG, "SCREEN_TOP_BOUNDS:  "+SCREEN_TOP_BOUNDS);
-            int puckSpeed = 30000;
             puckCycleList[puckClock].setAdjustViewBounds(true);
             int PUCK_TOP =  puckCycleList[puckClock].getTop();
             Log.d(TAG, "PUCK_TOP:  "+PUCK_TOP);
@@ -266,14 +323,13 @@ public class NSBGameActivity extends AppCompatActivity {
             if( bottomBoundary < puckYPOS){//double check logic
                 ObjectAnimator animY = ObjectAnimator.ofFloat(puckCycleList[puckClock], View.TRANSLATION_Y, flingDistance*yVelocity);
                 ObjectAnimator animX = ObjectAnimator.ofFloat( puckCycleList[puckClock],View.TRANSLATION_X, flingDistance*xVelocity);
-                ObjectAnimator animZ = ObjectAnimator.ofFloat(puckClock, "z", flingDistance);
+                ObjectAnimator animZ = ObjectAnimator.ofFloat(puckCycleList[puckClock], View.TRANSLATION_Z, flingDistance * 2000);
                 animatePuckProperties = new AnimatorSet();
                 animatePuckProperties.setInterpolator(new DecelerateInterpolator(10));
                 animatePuckProperties.setStartDelay(0);
-                animatePuckProperties.playTogether(animY,animX);
-                animatePuckProperties.setDuration(puckSpeed);
+                animatePuckProperties.playTogether(animY, animX, animZ);
+                animatePuckProperties.setDuration(maxDuration);
                 animatePuckProperties.start();
-
                 playSound(R.raw.realisticslide2);
             }
         }
