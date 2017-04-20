@@ -38,12 +38,7 @@ public class NSBGameActivity extends AppCompatActivity {
     ImageView bluePuck3;
     int maxScore = 30;
     boolean maxScoreReached = false;
-    View.OnTouchListener redPuck1Listener;
-    View.OnTouchListener redPuck2Listener;
-    View.OnTouchListener redPuck3Listener;
-    View.OnTouchListener bluePuck1Listener;
-    View.OnTouchListener bluePuck2Listener;
-    View.OnTouchListener bluePuck3Listener;
+    View.OnTouchListener puckListener;
     GestureDetector detector;
     ImageView[] puckCycleList;
 
@@ -62,20 +57,9 @@ public class NSBGameActivity extends AppCompatActivity {
         setupInitialPuckVisibility();
         gameView = (ConstraintLayout) findViewById(R.id.nsbGame);
         detector = new GestureDetector(this, new CustomGestureListener());
-        listenForTouchOnRedPuck1();
-        listenForTouchOnRedPuck2();
-        listenForTouchOnRedPuck3();
-        listenForTouchOnBluePuck1();
-        listenForTouchOnBluePuck2();
-        listenForTouchOnBluePuck3();
+        listenForTouchOnPuck();
         //Round cycle
         redPuck1.setClickable(true);
-        redPuck1.setOnTouchListener(redPuck1Listener);
-        redPuck2.setOnTouchListener(redPuck2Listener);
-        redPuck3.setOnTouchListener(redPuck3Listener);
-        bluePuck1.setOnTouchListener(bluePuck1Listener);
-        bluePuck2.setOnTouchListener(bluePuck2Listener);
-        bluePuck3.setOnTouchListener(bluePuck3Listener);
         playGame();
         //reset
     }
@@ -83,12 +67,14 @@ public class NSBGameActivity extends AppCompatActivity {
     @Override
     public void onResume() {
         super.onResume();
-        Thread gameThread = new Thread(new Runnable() {
+        final Thread gameThread = new Thread(new Runnable() {
+
             @Override
             public void run() {
                 playGame();
             }
         });
+        gameThread.start();
     }
 
     public void calculateDistance() {
@@ -125,107 +111,46 @@ public class NSBGameActivity extends AppCompatActivity {
         bluePuck3.setVisibility(View.GONE);
     }
 
-    public void listenForTouchOnRedPuck1() {
-        redPuck1Listener = new View.OnTouchListener() {
+    public void listenForTouchOnPuck() {
+        puckListener = new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
-                if (puckClock == 0) {
-                    return detector.onTouchEvent(event);
-                }
-                return false;
-            }
-        };
-    }
 
-    public void listenForTouchOnRedPuck2() {
-        redPuck2Listener = new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                if (puckClock == 1) {
-                    return detector.onTouchEvent(event);
-                }
-                return false;
-
-            }
-        };
-    }
-
-    public void listenForTouchOnRedPuck3() {
-        redPuck3Listener = new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                if (puckClock == 2) {
-                    return detector.onTouchEvent(event);
-                }
-                return false;
-            }
-        };
-    }
-
-    public void listenForTouchOnBluePuck1() {
-        bluePuck1Listener = new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                if (puckClock == 3) {
-                    return detector.onTouchEvent(event);
-                }
-                return false;
-            }
-        };
-    }
-
-    public void listenForTouchOnBluePuck2() {
-        bluePuck2Listener = new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                if (puckClock == 3) {
-                    return detector.onTouchEvent(event);
-                }
-                return false;
-            }
-        };
-    }
-
-    public void listenForTouchOnBluePuck3() {
-        bluePuck3Listener = new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                if (puckClock == 5) {
-                    return detector.onTouchEvent(event);
-                }
-                return false;
+                return detector.onTouchEvent(event);
             }
         };
     }
 
     public synchronized void playGame() {
+
         if (puckClock == 0) {
+            puckCycleList[puckClock].setOnTouchListener(puckListener);
             puckCycleList[puckClock].setClickable(true);
-            puckCycleList[puckClock].setVisibility(View.VISIBLE);
         }
         if (puckClock == 1) {
+            puckCycleList[puckClock].setOnTouchListener(puckListener);
             puckCycleList[puckClock].setClickable(true);
-            puckCycleList[puckClock].setVisibility(View.VISIBLE);
             disablePreviousClickableViews();
         }
         if (puckClock == 2) {
+            puckCycleList[puckClock].setOnTouchListener(puckListener);
             puckCycleList[puckClock].setClickable(true);
-            puckCycleList[puckClock].setVisibility(View.VISIBLE);
             disablePreviousClickableViews();
         }
         if (puckClock == 3) {
+            puckCycleList[puckClock].setOnTouchListener(puckListener);
             puckCycleList[puckClock].setClickable(true);
-            puckCycleList[puckClock].setVisibility(View.VISIBLE);
             disablePreviousClickableViews();
         }
         if (puckClock == 4) {
+            puckCycleList[puckClock].setOnTouchListener(puckListener);
             puckCycleList[puckClock].setClickable(true);
             puckCycleList[puckClock].setVisibility(View.VISIBLE);
             disablePreviousClickableViews();
         }
         if (puckClock == 5) {
+            puckCycleList[puckClock].setOnTouchListener(puckListener);
             puckCycleList[puckClock].setClickable(true);
-            puckCycleList[puckClock].setVisibility(View.VISIBLE);
             disablePreviousClickableViews();
         }
     }
@@ -235,10 +160,15 @@ public class NSBGameActivity extends AppCompatActivity {
 
     }
 
+    public void resetPuckPositions() {
+
+
+    }
+
     //disable clicks on used pucks
     public void disablePreviousClickableViews() {
         for (int i = puckClock - 1; i > 0; i--) {
-            puckCycleList[i].setClickable(false);
+            puckCycleList[i].setClickable(true);
         }
     }
 
@@ -273,28 +203,36 @@ public class NSBGameActivity extends AppCompatActivity {
 
         @Override
         public boolean onFling(MotionEvent fingerDown, MotionEvent move, float velocityX, float velocityY) {
-
+            downXPOS = fingerDown.getX();
+            Log.d(TAG, "XPOS finger down:  " + downXPOS);
+            downYPOS = fingerDown.getY();
+            Log.d(TAG, "YPOS finger down:  " + downYPOS);
+            Log.d(TAG, "puck left x: " + puckCycleList[puckClock].getLeft());
+            Log.d(TAG, "puck right x: " + puckCycleList[puckClock].getRight());
+            float prePuckTop = puckCycleList[puckClock].getTop();
+            Log.d(TAG, "puck top y: " + puckCycleList[puckClock].getTop());
+            Log.d(TAG, "puck bottom y : " + puckCycleList[puckClock].getBottom());
+            //must ensure that the finger is in the position of the current puck.
             Log.i(TAG, "____FLING INITIATED____");
             //animatePuck();
-            downXPOS = fingerDown.getX();
-            Log.d(TAG, "XPOS finger down:  "+downXPOS);
-            downYPOS = fingerDown.getY();
-            Log.d(TAG, "YPOS finger down:  "+downYPOS);
             upXPOS = move.getX();
-            Log.d(TAG, "End X POS:  "+upXPOS);
+            Log.d(TAG, "End X POS:  " + upXPOS);
             upYPOS = move.getY();
-            Log.d(TAG, "End Y POS:  "+upYPOS);
-            dx = (upXPOS-downXPOS);
-            dy = (upYPOS-downYPOS);
-            Log.d(TAG, "End Y POS:  "+upYPOS);
+            Log.d(TAG, "End Y POS:  " + upYPOS);
+            dx = (upXPOS - downXPOS);
+            dy = (upYPOS - downYPOS);
+            Log.d(TAG, "End Y POS:  " + upYPOS);
             //multiplies distance the puck will travel
-            xVelocity = (float) (velocityX*.00025);
-            Log.d(TAG, "Velocity X:  "+velocityX);
-            yVelocity = (float) (velocityY*.00025);
-            Log.d(TAG, "Velocity Y:  "+velocityY);
+            xVelocity = (float) (velocityX * .00025);
+            Log.d(TAG, "Velocity X:  " + velocityX);
+            yVelocity = (float) (velocityY * .00025);
+            Log.d(TAG, "Velocity Y:  " + velocityY);
             calculateDistance();
             animatePuck();
+            float postPuckTop = puckCycleList[puckClock].getTop();
             puckClock++;
+            puckCycleList[puckClock].setVisibility(View.VISIBLE);
+            Log.d(TAG, "Puck clock Value " + puckClock);
             return true;
         }
 
@@ -319,19 +257,16 @@ public class NSBGameActivity extends AppCompatActivity {
             int topBoundary =  SCREEN_TOP_BOUNDS + PUCK_TOP;
             Log.d(TAG, "topBoundary:  "+topBoundary);
             Log.d(TAG, "initial bottom boundary:  "+bottomBoundary);
-
-            if( bottomBoundary < puckYPOS){//double check logic
-                ObjectAnimator animY = ObjectAnimator.ofFloat(puckCycleList[puckClock], View.TRANSLATION_Y, flingDistance*yVelocity);
-                ObjectAnimator animX = ObjectAnimator.ofFloat( puckCycleList[puckClock],View.TRANSLATION_X, flingDistance*xVelocity);
-                ObjectAnimator animZ = ObjectAnimator.ofFloat(puckCycleList[puckClock], View.TRANSLATION_Z, flingDistance * 2000);
-                animatePuckProperties = new AnimatorSet();
-                animatePuckProperties.setInterpolator(new DecelerateInterpolator(10));
-                animatePuckProperties.setStartDelay(0);
-                animatePuckProperties.playTogether(animY, animX, animZ);
-                animatePuckProperties.setDuration(maxDuration);
-                animatePuckProperties.start();
-                playSound(R.raw.realisticslide2);
-            }
+            ObjectAnimator animY = ObjectAnimator.ofFloat(puckCycleList[puckClock], View.TRANSLATION_Y, flingDistance * yVelocity);
+            ObjectAnimator animX = ObjectAnimator.ofFloat(puckCycleList[puckClock], View.TRANSLATION_X, flingDistance * xVelocity);
+            ObjectAnimator animZ = ObjectAnimator.ofFloat(puckCycleList[puckClock], View.TRANSLATION_Z, flingDistance * 2000);
+            animatePuckProperties = new AnimatorSet();
+            animatePuckProperties.setInterpolator(new DecelerateInterpolator(10));
+            animatePuckProperties.setStartDelay(0);
+            animatePuckProperties.playTogether(animY, animX, animZ);
+            animatePuckProperties.setDuration(maxDuration);
+            animatePuckProperties.start();
+            playSound(R.raw.realisticslide2);
         }
     }
 }
