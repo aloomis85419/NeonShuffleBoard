@@ -44,6 +44,8 @@ public class MainMenuActivity extends FragmentActivity {
                 mp.setLooping(true);
             }
         });
+
+        loopMusic(R.raw.comtruiseglawio);
         playGame = (Button)findViewById(R.id.playGame);
         gameSettings = (Button)findViewById(R.id.gameSettings);
 
@@ -92,7 +94,9 @@ public class MainMenuActivity extends FragmentActivity {
         soundPlayer.start();
     }
 
+    private void loopMusic(int resID) {
 
+    }
 
     @Override
     public void onPause(){

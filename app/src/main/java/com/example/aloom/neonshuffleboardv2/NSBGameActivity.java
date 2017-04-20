@@ -15,17 +15,12 @@ import android.view.animation.Animation;
 import android.view.animation.DecelerateInterpolator;
 import android.widget.ImageView;
 
-import java.util.concurrent.TimeUnit;
-
 //Intent is to produce a realistic simulation of a fling on the puck object for the Neon ShuffleBoard game
-public class NSBGameActivity extends AppCompatActivity implements Cloneable{
-    private static final int ANIMATION_TIME = 240;
+public class NSBGameActivity extends AppCompatActivity {
     private final String TAG = "PuckAnimatorActivity";
-    //All physical state variables of the puck that track finger touch movement properties
     AnimatorSet animatePuckProperties;
     Animation.AnimationListener animState;
     ConstraintLayout gameView;
-
     float flingDistance;
     float downXPOS;
     float downYPOS;
@@ -35,17 +30,22 @@ public class NSBGameActivity extends AppCompatActivity implements Cloneable{
     float yVelocity;
     float dx;
     float dy;
-    //start to think about how the views will get cycled through
-    //might be able to remove red and blue puck imageviews
-    int puckClock;
+    int puckClock = 0;
     ImageView redPuck1;
     ImageView redPuck2;
     ImageView redPuck3;
     ImageView bluePuck1;
     ImageView bluePuck2;
     ImageView bluePuck3;
+    View.OnTouchListener redPuck1Listener;
+    View.OnTouchListener redPuck2Listener;
+    View.OnTouchListener redPuck3Listener;
+    View.OnTouchListener bluePuck1Listener;
+    View.OnTouchListener bluePuck2Listener;
+    View.OnTouchListener bluePuck3Listener;
     GestureDetector detector;
     ImageView[] puckCycleList;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -59,37 +59,31 @@ public class NSBGameActivity extends AppCompatActivity implements Cloneable{
         puckCycleList = new ImageView[]{redPuck1, redPuck2, redPuck3
                 , bluePuck1, bluePuck2, bluePuck3};
         setupInitialPuckVisibility();
-        //setupInitialPuckVisibility();
-        puckCycleList[0].setVisibility(View.VISIBLE);
-        gameView = (ConstraintLayout)findViewById(R.id.nsbGame);
+        gameView = (ConstraintLayout) findViewById(R.id.nsbGame);
         detector = new GestureDetector(this, new CustomGestureListener());
-        animatePuckPropertiesOnTouch();
+        listenForTouchOnRedPuck1();
+        listenForTouchOnRedPuck2();
+        listenForTouchOnRedPuck3();
+        listenForTouchOnBluePuck1();
+        listenForTouchOnBluePuck2();
+        listenForTouchOnBluePuck3();
+        redPuck1.setOnTouchListener(redPuck1Listener);
+        redPuck2.setOnTouchListener(redPuck2Listener);
+        redPuck3.setOnTouchListener(redPuck3Listener);
+        bluePuck1.setOnTouchListener(bluePuck1Listener);
+        bluePuck2.setOnTouchListener(bluePuck2Listener);
+        bluePuck3.setOnTouchListener(bluePuck3Listener);
     }
 
-    public void calculateDistance(MotionEvent event){
+    public void calculateDistance() {
         Log.d(TAG, "initial x pos: "+ downXPOS);
         Log.d(TAG, "initial y pos: "+ downYPOS);
         flingDistance = (float) Math.sqrt((dx*dx)+(dy*dy));
     }
 
-    public void animatePuckPropertiesOnTouch() {
-        //can change this line to allow player to select their puck color in future update
-        //only initial values
-        for (int puckID = 0; puckID < puckCycleList.length; puckID++) {
-            puckClock = puckID;
-            puckCycleList[puckID].setOnTouchListener(new View.OnTouchListener() {
-                                                         @Override
-                                                         public boolean onTouch(View v, MotionEvent ev) {
-                                                             puckCycleList[puckClock].setVisibility(View.VISIBLE);
-                                                             return detector.onTouchEvent(ev);
-                }
-            }
-            );
-        }
-    }
-    public void waitTime(int seconds) {
+    public void waitTime(int milliseconds) {
         try {
-            TimeUnit.SECONDS.sleep(seconds);
+            wait(milliseconds);
         } catch (Exception e) {
             Log.d("Wait Method: ", "Cause: " + e.getCause());
         }
@@ -106,13 +100,92 @@ public class NSBGameActivity extends AppCompatActivity implements Cloneable{
         soundPlayer.start();
     }
 
-    //excludes the first puck in the sequence
+    //exclude first puck
     public void setupInitialPuckVisibility() {
         redPuck2.setVisibility(View.GONE);
         redPuck3.setVisibility(View.GONE);
         bluePuck1.setVisibility(View.GONE);
         bluePuck2.setVisibility(View.GONE);
         bluePuck3.setVisibility(View.GONE);
+    }
+
+    public void listenForTouchOnRedPuck1() {
+        redPuck1Listener = new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                if (puckClock == 0) {
+                    redPuck1.setClickable(true);
+                    return detector.onTouchEvent(event);
+                }
+                return false;
+            }
+        };
+    }
+
+    public void listenForTouchOnRedPuck2() {
+        redPuck2Listener = new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                if (puckClock == 1) {
+                    redPuck2.setClickable(true);
+                    return detector.onTouchEvent(event);
+                }
+                return false;
+
+            }
+        };
+    }
+
+    public void listenForTouchOnRedPuck3() {
+        redPuck3Listener = new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                if (puckClock == 2) {
+                    redPuck3.setClickable(true);
+                    return detector.onTouchEvent(event);
+                }
+                return false;
+            }
+        };
+    }
+
+    public void listenForTouchOnBluePuck1() {
+        bluePuck1Listener = new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                if (puckClock == 3) {
+                    bluePuck1.setClickable(true);
+                    return detector.onTouchEvent(event);
+                }
+                return false;
+            }
+        };
+    }
+
+    public void listenForTouchOnBluePuck2() {
+        bluePuck2Listener = new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                if (puckClock == 3) {
+                    bluePuck2.setClickable(true);
+                    return detector.onTouchEvent(event);
+                }
+                return false;
+            }
+        };
+    }
+
+    public void listenForTouchOnBluePuck3() {
+        bluePuck3Listener = new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                if (puckClock == 5) {
+                    bluePuck3.setClickable(true);
+                    return detector.onTouchEvent(event);
+                }
+                return false;
+            }
+        };
     }
 
     class CustomGestureListener implements GestureDetector.OnGestureListener{
@@ -166,7 +239,7 @@ public class NSBGameActivity extends AppCompatActivity implements Cloneable{
             Log.d(TAG, "Velocity X:  "+velocityX);
             yVelocity = (float) (velocityY*.00025);
             Log.d(TAG, "Velocity Y:  "+velocityY);
-            calculateDistance(move);
+            calculateDistance();
             animatePuck();
             return true;
         }
@@ -197,7 +270,7 @@ public class NSBGameActivity extends AppCompatActivity implements Cloneable{
             if( bottomBoundary < puckYPOS){//double check logic
                 ObjectAnimator animY = ObjectAnimator.ofFloat(puckCycleList[puckClock], View.TRANSLATION_Y, flingDistance*yVelocity);
                 ObjectAnimator animX = ObjectAnimator.ofFloat( puckCycleList[puckClock],View.TRANSLATION_X, flingDistance*xVelocity);
-                //ObjectAnimator animZ = ObjectAnimator.ofFloat(puck,"z",flingDistance);
+                ObjectAnimator animZ = ObjectAnimator.ofFloat(puckClock, "z", flingDistance);
                 animatePuckProperties = new AnimatorSet();
                 animatePuckProperties.setInterpolator(new DecelerateInterpolator(10));
                 animatePuckProperties.setStartDelay(0);
