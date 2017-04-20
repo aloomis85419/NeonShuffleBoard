@@ -190,10 +190,6 @@ public class NSBGameActivity extends AppCompatActivity {
 
     class CustomGestureListener implements GestureDetector.OnGestureListener{
 
-        private static final int SWIPE_MIN_DISTANCE = 120;
-        private static final int SWIPE_MAX_OFF_PATH = 250;
-        private static final float SWIPE_THRESHOLD_VELOCITY = 200;
-
         @Override
         public boolean onDown(MotionEvent e) {
             return false;
@@ -277,6 +273,7 @@ public class NSBGameActivity extends AppCompatActivity {
                 animatePuckProperties.playTogether(animY,animX);
                 animatePuckProperties.setDuration(puckSpeed);
                 animatePuckProperties.start();
+
                 playSound(R.raw.realisticslide2);
             }
         }
