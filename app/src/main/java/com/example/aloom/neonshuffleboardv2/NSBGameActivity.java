@@ -19,6 +19,8 @@ import android.widget.ImageView;
 public class NSBGameActivity extends AppCompatActivity {
     private final String TAG = "PuckAnimatorActivity";
     AnimatorSet animatePuckProperties;
+    ObjectAnimator returnToStartingYPosition;
+    ObjectAnimator returnToStartingXPosition;
     ConstraintLayout gameView;
     float flingDistance;
     float downXPOS;
@@ -38,6 +40,7 @@ public class NSBGameActivity extends AppCompatActivity {
     ImageView bluePuck1;
     ImageView bluePuck2;
     ImageView bluePuck3;
+    float puckCenter;
     View.OnTouchListener puckListener;
     GestureDetectorCompat mDetector;
     ImageView[] puckCycleList;
@@ -56,6 +59,7 @@ public class NSBGameActivity extends AppCompatActivity {
         puckCycleList = new ImageView[]{redPuck1, redPuck2, redPuck3
                 , bluePuck1, bluePuck2, bluePuck3};
         puckCycleList[puckClock].setClickable(true);
+        puckCenter = (puckCycleList[puckClock].getTop() + puckCycleList[puckClock].getBottom()) / 2;
         gameView = (ConstraintLayout) findViewById(R.id.nsbGame);
         mDetector = new GestureDetectorCompat(this, new PuckGestureListener());
         puckCycleList[puckClock].setOnTouchListener(new View.OnTouchListener() {
@@ -73,10 +77,26 @@ public class NSBGameActivity extends AppCompatActivity {
 
             @Override
             public void run() {
-
+                checkEndOfRound();
             }
         });
         gameThread.start();
+    }
+
+    public void checkEndOfRound() {
+
+        if (puckClock == 6) {
+            puckClock = 0;
+            animatePuckProperties.cancel();
+            float puckY = (puckCycleList[puckClock].getTop() + puckCycleList[puckClock].getBottom()) / 2;
+            float puckX = (puckCycleList[puckClock].getLeft() + puckCycleList[puckClock].getRight()) / 2;
+            ObjectAnimator resetX = ObjectAnimator.ofFloat(puckCycleList[puckClock], View.X, puckX);
+            ObjectAnimator resetY = ObjectAnimator.ofFloat(puckCycleList[puckClock], View.Y, puckY);
+            animatePuckProperties.playTogether(resetX, resetY);
+            animatePuckProperties.setStartDelay(0);
+            animatePuckProperties.setDuration(1);
+            animatePuckProperties.start();
+        }
     }
 
     public void initialVisibility() {
@@ -182,13 +202,16 @@ public class NSBGameActivity extends AppCompatActivity {
             Log.d(TAG, "Puck: " + puckCycleList[puckClock]);
             ObjectAnimator animX = ObjectAnimator.ofFloat(puckCycleList[puckClock], View.TRANSLATION_X, flingDistance * xVelocity);
             ObjectAnimator animZ = ObjectAnimator.ofFloat(puckCycleList[puckClock], View.TRANSLATION_Z, flingDistance * 2000);
+            ObjectAnimator scaleX = ObjectAnimator.ofFloat(puckCycleList[puckClock], ImageView.SCALE_X, (float) .77);
+            ObjectAnimator scaleY = ObjectAnimator.ofFloat(puckCycleList[puckClock], ImageView.SCALE_Y, (float) .77);
             animatePuckProperties = new AnimatorSet();
             animatePuckProperties.setInterpolator(new DecelerateInterpolator(10));
             animatePuckProperties.setStartDelay(0);
-            animatePuckProperties.playTogether(animY, animX);
+            animatePuckProperties.playTogether(animY, animX, animZ, scaleX, scaleY);
             animatePuckProperties.setDuration(maxDuration);
             animatePuckProperties.start();
             playSound(R.raw.realisticslide2);
         }
     }
+
 }
