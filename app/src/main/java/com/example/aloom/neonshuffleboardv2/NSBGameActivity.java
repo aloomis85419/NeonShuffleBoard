@@ -93,7 +93,7 @@ public class NSBGameActivity extends AppCompatActivity {
             animatePuckProperties.start();
         }
         clearTheBoard();
-        initialVisibility();
+
     }
 
     private void initialVisibility() {
@@ -184,7 +184,8 @@ public class NSBGameActivity extends AppCompatActivity {
             } else if (isNotEndOfRound() == false) {
                 waitTime(5000);
                 resetRound();
-                return true;
+                initialVisibility();
+                return false;
             }
             puckClock++;
 
@@ -194,7 +195,6 @@ public class NSBGameActivity extends AppCompatActivity {
         }
 
         private void animatePuck() {
-            puckCycleList[puckClock].setAdjustViewBounds(true);
             ObjectAnimator animY = ObjectAnimator.ofFloat(puckCycleList[puckClock], View.TRANSLATION_Y, flingDistance * yVelocity);
             ObjectAnimator animX = ObjectAnimator.ofFloat(puckCycleList[puckClock], View.TRANSLATION_X, flingDistance * xVelocity);
             animatePuckProperties = new AnimatorSet();
@@ -204,9 +204,6 @@ public class NSBGameActivity extends AppCompatActivity {
             animatePuckProperties.setDuration(maxDuration);
             animatePuckProperties.start();
             playSound(R.raw.realisticslide2);
-            if (puckClock == 5) {
-                animatePuckProperties.end();
-            }
         }
     }
 }
