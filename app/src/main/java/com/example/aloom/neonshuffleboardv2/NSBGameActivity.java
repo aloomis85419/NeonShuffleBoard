@@ -3,7 +3,6 @@ package com.example.aloom.neonshuffleboardv2;
 
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
-import android.graphics.RectF;
 import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.support.constraint.ConstraintLayout;
@@ -19,29 +18,28 @@ import android.widget.ImageView;
 public class NSBGameActivity extends AppCompatActivity {
     private final String TAG = "PuckAnimatorActivity";
     AnimatorSet animatePuckProperties;
-    ObjectAnimator returnToStartingYPosition;
-    ObjectAnimator returnToStartingXPosition;
     ConstraintLayout gameView;
     float flingDistance;
     float downXPOS;
     float downYPOS;
+    Bundle firstRoundData;
     float upXPOS;
     float upYPOS;
+    float resetPuckXPOS;
+    float resetPuckYPOS;
     float xVelocity;
     float yVelocity;
     float dx;
     float dy;
     int puckClock = 0;
-    int maxDuration = 30000;
-    RectF touchZone;
+    int animClock = 0;
+    int maxDuration = 20000;
     ImageView redPuck1;
     ImageView redPuck2;
     ImageView redPuck3;
     ImageView bluePuck1;
     ImageView bluePuck2;
     ImageView bluePuck3;
-    float puckCenter;
-    View.OnTouchListener puckListener;
     GestureDetectorCompat mDetector;
     ImageView[] puckCycleList;
 
@@ -55,11 +53,16 @@ public class NSBGameActivity extends AppCompatActivity {
         bluePuck1 = (ImageView) findViewById(R.id.bluePuck1);
         bluePuck2 = (ImageView) findViewById(R.id.bluePuck2);
         bluePuck3 = (ImageView) findViewById(R.id.bluePuck3);
-        initialVisibility();
         puckCycleList = new ImageView[]{redPuck1, redPuck2, redPuck3
                 , bluePuck1, bluePuck2, bluePuck3};
+        clearTheBoard();
+        initialVisibility();
+        calculateResetPosition();
+        if (savedInstanceState != null) {
+            resetPuckXPOS = savedInstanceState.getFloat("resetXposition");
+            resetPuckYPOS = savedInstanceState.getFloat("resetYposition");
+        }
         puckCycleList[puckClock].setClickable(true);
-        puckCenter = (puckCycleList[puckClock].getTop() + puckCycleList[puckClock].getBottom()) / 2;
         gameView = (ConstraintLayout) findViewById(R.id.nsbGame);
         mDetector = new GestureDetectorCompat(this, new PuckGestureListener());
         puckCycleList[puckClock].setOnTouchListener(new View.OnTouchListener() {
@@ -70,45 +73,34 @@ public class NSBGameActivity extends AppCompatActivity {
         });
     }
 
+    //Chris this is where we can save the state of the initial position
     @Override
-    public void onResume() {
-        super.onResume();
-        final Thread gameThread = new Thread(new Runnable() {
+    public void onSaveInstanceState(Bundle outState) {
 
-            @Override
-            public void run() {
-                checkEndOfRound();
-            }
-        });
-        gameThread.start();
+        outState.putFloat("resetXposition ", resetPuckXPOS);
+        outState.putFloat("resetYposition ", resetPuckYPOS);
+
     }
 
-    public void checkEndOfRound() {
-
-        if (puckClock == 6) {
-            puckClock = 0;
-            animatePuckProperties.cancel();
-            float puckY = (puckCycleList[puckClock].getTop() + puckCycleList[puckClock].getBottom()) / 2;
-            float puckX = (puckCycleList[puckClock].getLeft() + puckCycleList[puckClock].getRight()) / 2;
-            ObjectAnimator resetX = ObjectAnimator.ofFloat(puckCycleList[puckClock], View.X, puckX);
-            ObjectAnimator resetY = ObjectAnimator.ofFloat(puckCycleList[puckClock], View.Y, puckY);
+    private void resetRound() {
+        puckClock = 0;
+        for (int i = 0; i < puckCycleList.length; i++) {
+            ObjectAnimator resetX = ObjectAnimator.ofFloat(puckCycleList[i], View.TRANSLATION_X, resetPuckXPOS);
+            ObjectAnimator resetY = ObjectAnimator.ofFloat(puckCycleList[i], View.TRANSLATION_Y, resetPuckYPOS);
             animatePuckProperties.playTogether(resetX, resetY);
             animatePuckProperties.setStartDelay(0);
-            animatePuckProperties.setDuration(1);
+            animatePuckProperties.setDuration(0);
             animatePuckProperties.start();
         }
+        clearTheBoard();
+        initialVisibility();
     }
 
-    public void initialVisibility() {
-
-        redPuck2.setVisibility(View.GONE);
-        redPuck3.setVisibility(View.GONE);
-        bluePuck1.setVisibility(View.GONE);
-        bluePuck2.setVisibility(View.GONE);
-        bluePuck3.setVisibility(View.GONE);
+    private void initialVisibility() {
+        redPuck1.setVisibility(View.VISIBLE);
     }
 
-    public void calculateDistance() {
+    private void calculateDistance() {
         Log.d(TAG, "initial x pos: " + downXPOS);
         Log.d(TAG, "initial y pos: " + downYPOS);
         flingDistance = (float) Math.sqrt((dx * dx) + (dy * dy));
@@ -131,87 +123,90 @@ public class NSBGameActivity extends AppCompatActivity {
         return super.onTouchEvent(event);
     }
 
+    private void calculateResetPosition() {
+        resetPuckXPOS = redPuck1.getX();
+        resetPuckYPOS = redPuck1.getY();
+    }
+
+    private void clearTheBoard() {
+        //has a round already occurred? is this the first round? doesnt matter need to clear the board for bot situations.
+
+        for (int i = 0; i < puckCycleList.length; i++) {
+            puckCycleList[i].setVisibility(View.GONE);
+        }
+    }
+
+    //chris modify this
+    private void resetPosition(int i) {
+        ObjectAnimator resetX = ObjectAnimator.ofFloat(puckCycleList[puckClock], View.TRANSLATION_X, resetPuckXPOS);
+        ObjectAnimator resetY = ObjectAnimator.ofFloat(puckCycleList[puckClock], View.TRANSLATION_Y, resetPuckYPOS);
+        animatePuckProperties.playTogether(resetX, resetY);
+        animatePuckProperties.setStartDelay(0);
+        animatePuckProperties.setDuration(0);
+        animatePuckProperties.start();
+    }
+
+    private void waitTime(int milliseconds) {
+        try {
+            Thread.sleep(milliseconds);                 //1000 milliseconds is one second.
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+        }
+    }
+
+    public boolean isNotEndOfRound() {
+        return puckClock < 5;
+    }
+
     //to handle flings (swipes)
     class PuckGestureListener extends GestureDetector.SimpleOnGestureListener {
-        private static final String DEBUG_TAG = "Gestures"; //for Log.d
-        private final int VELOCITY_TRIGGER = 0;
-        private final int DIST_TRIGGER = 190;
-
         @Override
         public boolean onDown(MotionEvent event) {
-            Log.d(DEBUG_TAG, "onDown: " + event.toString());
             return true;    //needed so all gestures are checked
         }
 
         @Override
         public boolean onFling(MotionEvent fingerDown, MotionEvent move,
                                float velocityX, float velocityY) {
-            Log.d(DEBUG_TAG, "onFling: " + velocityX + " --- " + fingerDown.toString() + move.toString());
-            Log.d(DEBUG_TAG, "         x0=" + fingerDown.getX() + "   x1=" + move.getX());
 
-            Log.i(TAG, "____FLING INITIATED____");
-            downXPOS = fingerDown.getX();
-            Log.d(TAG, "XPOS finger down:  " + downXPOS);
-            downYPOS = fingerDown.getY();
-            Log.d(TAG, "YPOS finger down:  " + downYPOS);
-            Log.d(TAG, "puck left x: " + puckCycleList[puckClock].getLeft());
-            Log.d(TAG, "puck right x: " + puckCycleList[puckClock].getRight());
-            Log.d(TAG, "puck top y: " + puckCycleList[puckClock].getTop());
-            Log.d(TAG, "puck bottom y : " + puckCycleList[puckClock].getBottom());
-            upXPOS = move.getX();
-            Log.d(TAG, "End X POS:  " + upXPOS);
-            upYPOS = move.getY();
-            Log.d(TAG, "End Y POS:  " + upYPOS);
-            dx = (upXPOS - downXPOS);
-            dy = (upYPOS - downYPOS);
-            Log.d(TAG, "End Y POS:  " + upYPOS);
-            xVelocity = (float) (velocityX * .00025);
-            Log.d(TAG, "Velocity X:  " + velocityX);
-            yVelocity = (float) (velocityY * .00025);
-            Log.d(TAG, "Velocity Y:  " + velocityY);
-            calculateDistance();
-            animatePuck();
+            if (isNotEndOfRound() == true) {
+                downXPOS = fingerDown.getX();
+                downYPOS = fingerDown.getY();
+                upXPOS = move.getX();
+                upYPOS = move.getY();
+                dx = (upXPOS - downXPOS);
+                dy = (upYPOS - downYPOS);
+                xVelocity = (float) (velocityX * .00025);
+                yVelocity = (float) (velocityY * .00025);
+                calculateDistance();
+                animatePuck();
+                //animation occurred
+            } else if (isNotEndOfRound() == false) {
+                waitTime(5000);
+                resetRound();
+                return true;
+            }
             puckClock++;
+
+            puckCycleList[puckClock - 1].setClickable(false);
             puckCycleList[puckClock].setVisibility(View.VISIBLE);
-            Log.d(TAG, "Puck clock Value " + puckClock);
             return true;
         }
 
-        public void animatePuck() {
-            int SCREEN_BOTTOM_BOUNDS = gameView.getBottom();
-            Log.d(TAG, "SCREEN_BOTTOM_BOUNDS:  " + SCREEN_BOTTOM_BOUNDS);
-            int SCREEN_TOP_BOUNDS = gameView.getTop();
-            Log.d(TAG, "SCREEN_TOP_BOUNDS:  " + SCREEN_TOP_BOUNDS);
+        private void animatePuck() {
             puckCycleList[puckClock].setAdjustViewBounds(true);
-            int PUCK_TOP = puckCycleList[puckClock].getTop();
-            Log.d(TAG, "PUCK_TOP:  " + PUCK_TOP);
-            int PUCK_BOTTOM = puckCycleList[puckClock].getBottom();
-            Log.d(TAG, "PUCK_BOTTOM:  " + PUCK_BOTTOM);
-            int[] puckXYLocation = new int[2];
-            puckCycleList[puckClock].getLocationOnScreen(puckXYLocation);
-            int puckXPOS = puckXYLocation[0];
-            Log.d(TAG, "puck x pos:  " + puckXPOS);
-            int puckYPOS = puckXYLocation[1];
-            Log.d(TAG, "puck y pos:  " + puckYPOS);
-            int bottomBoundary = SCREEN_BOTTOM_BOUNDS - PUCK_BOTTOM;
-            Log.d(TAG, "bottomBoundary:  " + bottomBoundary);
-            int topBoundary = SCREEN_TOP_BOUNDS + PUCK_TOP;
-            Log.d(TAG, "topBoundary:  " + topBoundary);
-            Log.d(TAG, "initial bottom boundary:  " + bottomBoundary);
             ObjectAnimator animY = ObjectAnimator.ofFloat(puckCycleList[puckClock], View.TRANSLATION_Y, flingDistance * yVelocity);
-            Log.d(TAG, "Puck: " + puckCycleList[puckClock]);
             ObjectAnimator animX = ObjectAnimator.ofFloat(puckCycleList[puckClock], View.TRANSLATION_X, flingDistance * xVelocity);
-            ObjectAnimator animZ = ObjectAnimator.ofFloat(puckCycleList[puckClock], View.TRANSLATION_Z, flingDistance * 2000);
-            ObjectAnimator scaleX = ObjectAnimator.ofFloat(puckCycleList[puckClock], ImageView.SCALE_X, (float) .77);
-            ObjectAnimator scaleY = ObjectAnimator.ofFloat(puckCycleList[puckClock], ImageView.SCALE_Y, (float) .77);
             animatePuckProperties = new AnimatorSet();
-            animatePuckProperties.setInterpolator(new DecelerateInterpolator(10));
+            animatePuckProperties.setInterpolator(new DecelerateInterpolator(15));
             animatePuckProperties.setStartDelay(0);
-            animatePuckProperties.playTogether(animY, animX, animZ, scaleX, scaleY);
+            animatePuckProperties.playTogether(animY, animX);
             animatePuckProperties.setDuration(maxDuration);
             animatePuckProperties.start();
             playSound(R.raw.realisticslide2);
+            if (puckClock == 5) {
+                animatePuckProperties.end();
+            }
         }
     }
-
 }

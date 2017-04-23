@@ -155,3 +155,12 @@ public class NSBGameActivity extends AppCompatActivity {
     }
 
 }
+
+
+float puckY;
+float puckX;
+
+
+
+    puckY = (puckCycleList[puckClock].getTop() + puckCycleList[puckClock].getBottom()) / 2;
+            puckX = (puckCycleList[puckClock].getLeft() + puckCycleList[puckClock].getRight()) / 2;
