@@ -1,8 +1,11 @@
 package com.example.aloom.neonshuffleboardv2;
 
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
+import android.animation.TimeInterpolator;
 import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.support.constraint.ConstraintLayout;
@@ -171,9 +174,7 @@ public class NSBGameActivity extends AppCompatActivity {
     }
 
     public void resetPuckPositions() {
-        for(int i = 0; i  < puckCycleList.length; i++){
-            puckCycleList[i].clearAnimation();
-        }
+
     }
 
     class CustomGestureListener implements GestureDetector.OnGestureListener {
@@ -278,8 +279,45 @@ public class NSBGameActivity extends AppCompatActivity {
             animatePuckProperties.playTogether(animY, animX);
             animatePuckProperties.setDuration(maxDuration);
             animatePuckProperties.setupStartValues();
+            animatePuckProperties.addListener(new AnimatorListenerAdapter() {
+                @Override
+                public void onAnimationCancel(Animator animation) {
+                    super.onAnimationCancel(animation);
+                }
+
+                @Override
+                public void onAnimationEnd(Animator animation) {
+                    super.onAnimationEnd(animation);
+                    
+                }
+
+                @Override
+                public void onAnimationRepeat(Animator animation) {
+                    super.onAnimationRepeat(animation);
+                    
+
+                }
+
+                @Override
+                public void onAnimationStart(Animator animation) {
+                    super.onAnimationStart(animation);
+                    playSound(R.raw.realisticslide2);
+                }
+
+                @Override
+                public void onAnimationPause(Animator animation) {
+                    super.onAnimationPause(animation);
+                }
+
+                @Override
+                public void onAnimationResume(Animator animation) {
+                    super.onAnimationResume(animation);
+                }
+            });
             animatePuckProperties.start();
-            playSound(R.raw.realisticslide2);
+
         }
+    }
+}
     }
 
