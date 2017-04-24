@@ -11,8 +11,11 @@ import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.animation.Animation;
 import android.view.animation.DecelerateInterpolator;
 import android.widget.ImageView;
+import android.widget.TextSwitcher;
+import android.widget.TextView;
 
 //Intent is to produce a realistic simulation of a fling on the puck object for the Neon ShuffleBoard game
 public class NSBGameActivity extends AppCompatActivity {
@@ -41,6 +44,11 @@ public class NSBGameActivity extends AppCompatActivity {
     View.OnTouchListener puckListener;
     GestureDetector detector;
     ImageView[] puckCycleList;
+    TextSwitcher blueSwitcher;
+    TextSwitcher redSwitcher;
+    TextView blueScoreText;
+    TextView redScoreText;
+    float startPositionTime;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,6 +72,19 @@ public class NSBGameActivity extends AppCompatActivity {
         //reset
     }
 
+    /*   //I'm not sure if the thread is working properly b/c I noticed that the playGame() method wasn't being called in the Fling event; so I just made the program call playGame().
+       @Override
+       public void onResume() {
+           super.onResume();
+           final Thread gameThread = new Thread(new Runnable() {
+               @Override
+               public void run() {
+                   playGame();
+               }
+           });
+           gameThread.start();
+       }
+   */
     public void calculateDistance() {
         Log.d(TAG, "initial x pos: " + downXPOS);
         Log.d(TAG, "initial y pos: " + downYPOS);
@@ -118,20 +139,16 @@ public class NSBGameActivity extends AppCompatActivity {
             puckCycleList[puckClock].setOnTouchListener(puckListener);
             puckCycleList[puckClock].setClickable(true);
             puckCycleList[puckClock - 1].setClickable(false);
-            //     puckCycleList[puckClock-1].setEnabled(false);
-            //     disablePreviousClickableViews();
         }
         if (puckClock == 2) {
             puckCycleList[puckClock].setOnTouchListener(puckListener);
             puckCycleList[puckClock].setClickable(true);
             puckCycleList[puckClock - 1].setClickable(false);
-            //disablePreviousClickableViews();
         }
         if (puckClock == 3) {
             puckCycleList[puckClock].setOnTouchListener(puckListener);
             puckCycleList[puckClock].setClickable(true);
             puckCycleList[puckClock - 1].setClickable(false);
-            //disablePreviousClickableViews();
         }
         if (puckClock == 4) {
             puckCycleList[puckClock].setOnTouchListener(puckListener);
@@ -154,19 +171,11 @@ public class NSBGameActivity extends AppCompatActivity {
     }
 
     public void resetPuckPositions() {
-
+            //All values were calculated manually
+        Bundle savedInstanceState = new Bundle();
+        onCreate(savedInstanceState);
 
     }
-/*  Don't need this anymore
-    //disable clicks on used pucks
-    public void disablePreviousClickableViews() {
-        for (int i = puckClock - 1; i > 0; i--) {
-            puckCycleList[i].setClickable(false);
-           // puckCycleList[i].setEnabled(false);
-        }
-    }
-*/
-
 
     class CustomGestureListener implements GestureDetector.OnGestureListener {
 
@@ -223,21 +232,21 @@ public class NSBGameActivity extends AppCompatActivity {
             Log.d(TAG, "Velocity Y:  " + velocityY);
             calculateDistance();
             animatePuck();
-            float postPuckTop = puckCycleList[puckClock].getTop();
             puckClock++;
             if (puckClock < 6) { //If pucks are still on the table
                 puckCycleList[puckClock].setVisibility(View.VISIBLE);
                 playGame();
             } else { // Else we just flung the last puck.
-                endGame();
+                endRound();
             }
             Log.d(TAG, "Puck clock Value " + puckClock);
 
             return true;
         }
 
-        public void endGame() {
+        public void endRound() {
             puckCycleList[puckClock - 1].setClickable(false);
+            resetPuckPositions();
         }
 
         public void animatePuck() {
@@ -269,7 +278,9 @@ public class NSBGameActivity extends AppCompatActivity {
             animatePuckProperties.setStartDelay(0);
             animatePuckProperties.playTogether(animY, animX);
             animatePuckProperties.setDuration(maxDuration);
+            animatePuckProperties.setupStartValues();
             animatePuckProperties.start();
             playSound(R.raw.realisticslide2);
         }
     }
+
