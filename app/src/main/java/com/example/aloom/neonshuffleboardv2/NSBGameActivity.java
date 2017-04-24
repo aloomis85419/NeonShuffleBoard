@@ -64,19 +64,6 @@ public class NSBGameActivity extends AppCompatActivity {
         //reset
     }
 
-    /*   //I'm not sure if the thread is working properly b/c I noticed that the playGame() method wasn't being called in the Fling event; so I just made the program call playGame().
-       @Override
-       public void onResume() {
-           super.onResume();
-           final Thread gameThread = new Thread(new Runnable() {
-               @Override
-               public void run() {
-                   playGame();
-               }
-           });
-           gameThread.start();
-       }
-   */
     public void calculateDistance() {
         Log.d(TAG, "initial x pos: " + downXPOS);
         Log.d(TAG, "initial y pos: " + downYPOS);
