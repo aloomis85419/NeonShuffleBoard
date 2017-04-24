@@ -171,10 +171,9 @@ public class NSBGameActivity extends AppCompatActivity {
     }
 
     public void resetPuckPositions() {
-            //All values were calculated manually
-        Bundle savedInstanceState = new Bundle();
-        onCreate(savedInstanceState);
-
+        for(int i = 0; i  < puckCycleList.length; i++){
+            puckCycleList[i].clearAnimation();
+        }
     }
 
     class CustomGestureListener implements GestureDetector.OnGestureListener {
