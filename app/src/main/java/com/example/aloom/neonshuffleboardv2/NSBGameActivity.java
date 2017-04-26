@@ -5,7 +5,7 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
-import android.animation.TimeInterpolator;
+import android.graphics.RectF;
 import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.support.constraint.ConstraintLayout;
@@ -14,7 +14,6 @@ import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.animation.Animation;
 import android.view.animation.DecelerateInterpolator;
 import android.widget.ImageView;
 import android.widget.TextSwitcher;
@@ -35,7 +34,7 @@ public class NSBGameActivity extends AppCompatActivity {
     float dx;
     float dy;
     int puckClock = 0;
-    int maxDuration = 30000;
+    int maxDuration = 35000;
     ImageView redPuck1;
     ImageView redPuck2;
     ImageView redPuck3;
@@ -51,7 +50,9 @@ public class NSBGameActivity extends AppCompatActivity {
     TextSwitcher redSwitcher;
     TextView blueScoreText;
     TextView redScoreText;
+
     float startPositionTime;
+    RectF pointZone;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,6 +69,14 @@ public class NSBGameActivity extends AppCompatActivity {
         setupInitialPuckVisibility();
         gameView = (ConstraintLayout) findViewById(R.id.nsbGame);
         detector = new GestureDetector(this, new CustomGestureListener());
+        blueSwitcher = (TextSwitcher)findViewById(R.id.blueScoreSwitcher);
+        redSwitcher = (TextSwitcher)findViewById(R.id.redScoreSwitcher);
+        blueScoreText = (TextView)findViewById(R.id.blueScoreText);
+        redScoreText = (TextView)findViewById(R.id.redScoreText);
+        blueScoreText.setText("0");
+        redScoreText.setText("0");
+        blueScoreText.setTextSize(1,60f);
+        redScoreText.setTextSize(1, 60f);
         listenForTouchOnPuck();
         //Round cycle
         redPuck1.setClickable(true);
@@ -75,19 +84,6 @@ public class NSBGameActivity extends AppCompatActivity {
         //reset
     }
 
-    /*   //I'm not sure if the thread is working properly b/c I noticed that the playGame() method wasn't being called in the Fling event; so I just made the program call playGame().
-       @Override
-       public void onResume() {
-           super.onResume();
-           final Thread gameThread = new Thread(new Runnable() {
-               @Override
-               public void run() {
-                   playGame();
-               }
-           });
-           gameThread.start();
-       }
-   */
     public void calculateDistance() {
         Log.d(TAG, "initial x pos: " + downXPOS);
         Log.d(TAG, "initial y pos: " + downYPOS);
@@ -111,6 +107,8 @@ public class NSBGameActivity extends AppCompatActivity {
             }
         });
         soundPlayer.start();
+
+        ObjectAnimator animY = ObjectAnimator.ofFloat(bluePuck1, View.Y,bluePuck1.getY());
     }
 
     //exclude first puck
@@ -168,12 +166,8 @@ public class NSBGameActivity extends AppCompatActivity {
         }
     }
 
-    public void updateGameState() {
-
-
-    }
-
     public void resetPuckPositions() {
+            //All values were calculated manually
 
     }
 
@@ -212,12 +206,9 @@ public class NSBGameActivity extends AppCompatActivity {
             Log.d(TAG, "YPOS finger down:  " + downYPOS);
             Log.d(TAG, "puck left x: " + puckCycleList[puckClock].getLeft());
             Log.d(TAG, "puck right x: " + puckCycleList[puckClock].getRight());
-            float prePuckTop = puckCycleList[puckClock].getTop();
             Log.d(TAG, "puck top y: " + puckCycleList[puckClock].getTop());
             Log.d(TAG, "puck bottom y : " + puckCycleList[puckClock].getBottom());
-            //must ensure that the finger is in the position of the current puck.
             Log.i(TAG, "____FLING INITIATED____");
-            //animatePuck();
             upXPOS = move.getX();
             Log.d(TAG, "End X POS:  " + upXPOS);
             upYPOS = move.getY();
@@ -225,7 +216,6 @@ public class NSBGameActivity extends AppCompatActivity {
             dx = (upXPOS - downXPOS);
             dy = (upYPOS - downYPOS);
             Log.d(TAG, "End Y POS:  " + upYPOS);
-            //multiplies distance the puck will travel
             xVelocity = (float) (velocityX * .00025);
             Log.d(TAG, "Velocity X:  " + velocityX);
             yVelocity = (float) (velocityY * .00025);
@@ -270,32 +260,60 @@ public class NSBGameActivity extends AppCompatActivity {
             int topBoundary = SCREEN_TOP_BOUNDS + PUCK_TOP;
             Log.d(TAG, "topBoundary:  " + topBoundary);
             Log.d(TAG, "initial bottom boundary:  " + bottomBoundary);
-            ObjectAnimator animY = ObjectAnimator.ofFloat(puckCycleList[puckClock], View.TRANSLATION_Y, flingDistance * yVelocity);
-            ObjectAnimator animX = ObjectAnimator.ofFloat(puckCycleList[puckClock], View.TRANSLATION_X, flingDistance * xVelocity);
-            //          ObjectAnimator animZ = ObjectAnimator.ofFloat(puckCycleList[puckClock], View.TRANSLATION_Z, flingDistance * 2000); //I don't think this does anything. Not positive.
+            final ObjectAnimator animY = ObjectAnimator.ofFloat(puckCycleList[puckClock], View.TRANSLATION_Y, flingDistance * yVelocity);
+            final ObjectAnimator animX = ObjectAnimator.ofFloat(puckCycleList[puckClock], View.TRANSLATION_X, flingDistance * xVelocity);
+            animY.setDuration(maxDuration);
+            animX.setDuration(maxDuration);
             animatePuckProperties = new AnimatorSet();
-            animatePuckProperties.setInterpolator(new DecelerateInterpolator(10));
+            animatePuckProperties.setInterpolator(new DecelerateInterpolator(16));
             animatePuckProperties.setStartDelay(0);
             animatePuckProperties.playTogether(animY, animX);
-            animatePuckProperties.setDuration(maxDuration);
             animatePuckProperties.setupStartValues();
             animatePuckProperties.addListener(new AnimatorListenerAdapter() {
                 @Override
                 public void onAnimationCancel(Animator animation) {
                     super.onAnimationCancel(animation);
+
                 }
 
                 @Override
                 public void onAnimationEnd(Animator animation) {
+
                     super.onAnimationEnd(animation);
-                    
+                    if(puckClock < 3) {//red pucks
+                        if (puckCycleList[puckClock].getY() < 1970 && puckCycleList[puckClock].getY() > 1850) {
+                            Log.d(TAG, "Puck Y position testing within boundary: Puck :" +puckClock+" Y Pos+ "+puckCycleList[puckClock].getY() );
+                            redSwitcher.setCurrentText("1");
+                        }
+                        if (puckCycleList[puckClock].getY() < 1970 && puckCycleList[puckClock].getY() > 1850) {
+                            Log.d(TAG, "Puck Y position testing within boundary: Puck :" +puckClock+" Y Pos+ "+puckCycleList[puckClock].getY() );
+                            redSwitcher.setCurrentText("1");
+                        }
+                        if (puckCycleList[puckClock].getY() < 1970 && puckCycleList[puckClock].getY() > 1850) {
+                            Log.d(TAG, "Puck Y position testing within boundary: Puck :" +puckClock+" Y Pos+ "+puckCycleList[puckClock].getY() );
+                            redSwitcher.setCurrentText("1");
+                        }
+                    }
+
+                    if(puckClock >= 3 && puckClock < 6) {//blue pucks
+                        if (puckCycleList[puckClock].getY() < 1970 && puckCycleList[puckClock].getY() > 1850) {
+                            Log.d(TAG, "Puck Y position testing within boundary: Puck :" +puckClock+" Y Pos+ "+puckCycleList[puckClock].getY() );
+                            redSwitcher.setCurrentText("1");
+                        }
+                        if (puckCycleList[puckClock].getY() < 1970 && puckCycleList[puckClock].getY() > 1850) {
+                            Log.d(TAG, "Puck Y position testing within boundary: Puck :" +puckClock+" Y Pos+ "+puckCycleList[puckClock].getY() );
+                            redSwitcher.setCurrentText("1");
+                        }
+                        if (puckCycleList[puckClock].getY() < 1970 && puckCycleList[puckClock].getY() > 1850) {
+                            Log.d(TAG, "Puck Y position testing within boundary: Puck :" +puckClock+" Y Pos+ "+puckCycleList[puckClock].getY() );
+                            redSwitcher.setCurrentText("1");
+                        }
+                    }
                 }
 
                 @Override
                 public void onAnimationRepeat(Animator animation) {
                     super.onAnimationRepeat(animation);
-                    
-
                 }
 
                 @Override
@@ -318,6 +336,3 @@ public class NSBGameActivity extends AppCompatActivity {
 
         }
     }
-}
-    }
-
