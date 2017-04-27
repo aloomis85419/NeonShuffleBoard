@@ -19,6 +19,8 @@ import android.widget.ImageView;
 import android.widget.TextSwitcher;
 import android.widget.TextView;
 
+import java.util.HashMap;
+
 //Intent is to produce a realistic simulation of a fling on the puck object for the Neon ShuffleBoard game
 public class NSBGameActivity extends AppCompatActivity {
     private final String TAG = "PuckAnimatorActivity";
@@ -34,6 +36,7 @@ public class NSBGameActivity extends AppCompatActivity {
     float dx;
     float dy;
     int puckClock = 0;
+    int animationClock = 0; //keeps track of end of animations
     int maxDuration = 35000;
     ImageView redPuck1;
     ImageView redPuck2;
@@ -41,7 +44,10 @@ public class NSBGameActivity extends AppCompatActivity {
     ImageView bluePuck1;
     ImageView bluePuck2;
     ImageView bluePuck3;
-    int maxScore = 30;
+    //standard game mode is 15 points
+    int maxScore = 15;
+    Integer redPlayerScore = 0;
+    Integer bluePlayerScore = 0;
     boolean maxScoreReached = false;
     View.OnTouchListener puckListener;
     GestureDetector detector;
@@ -51,8 +57,6 @@ public class NSBGameActivity extends AppCompatActivity {
     TextView blueScoreText;
     TextView redScoreText;
 
-    float startPositionTime;
-    RectF pointZone;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -216,9 +220,9 @@ public class NSBGameActivity extends AppCompatActivity {
             dx = (upXPOS - downXPOS);
             dy = (upYPOS - downYPOS);
             Log.d(TAG, "End Y POS:  " + upYPOS);
-            xVelocity = (float) (velocityX * .00025);
+            xVelocity = (float) (velocityX * .00035);
             Log.d(TAG, "Velocity X:  " + velocityX);
-            yVelocity = (float) (velocityY * .00025);
+            yVelocity = (float) (velocityY * .00035);
             Log.d(TAG, "Velocity Y:  " + velocityY);
             calculateDistance();
             animatePuck();
@@ -265,7 +269,7 @@ public class NSBGameActivity extends AppCompatActivity {
             animY.setDuration(maxDuration);
             animX.setDuration(maxDuration);
             animatePuckProperties = new AnimatorSet();
-            animatePuckProperties.setInterpolator(new DecelerateInterpolator(16));
+            animatePuckProperties.setInterpolator(new DecelerateInterpolator(17));
             animatePuckProperties.setStartDelay(0);
             animatePuckProperties.playTogether(animY, animX);
             animatePuckProperties.setupStartValues();
@@ -275,38 +279,74 @@ public class NSBGameActivity extends AppCompatActivity {
                     super.onAnimationCancel(animation);
 
                 }
-
+                //works but needs fine tuning
                 @Override
                 public void onAnimationEnd(Animator animation) {
-
                     super.onAnimationEnd(animation);
-                    if(puckClock < 3) {//red pucks
-                        if (puckCycleList[puckClock].getY() < 1970 && puckCycleList[puckClock].getY() > 1850) {
-                            Log.d(TAG, "Puck Y position testing within boundary: Puck :" +puckClock+" Y Pos+ "+puckCycleList[puckClock].getY() );
-                            redSwitcher.setCurrentText("1");
-                        }
-                        if (puckCycleList[puckClock].getY() < 1970 && puckCycleList[puckClock].getY() > 1850) {
-                            Log.d(TAG, "Puck Y position testing within boundary: Puck :" +puckClock+" Y Pos+ "+puckCycleList[puckClock].getY() );
-                            redSwitcher.setCurrentText("1");
-                        }
-                        if (puckCycleList[puckClock].getY() < 1970 && puckCycleList[puckClock].getY() > 1850) {
-                            Log.d(TAG, "Puck Y position testing within boundary: Puck :" +puckClock+" Y Pos+ "+puckCycleList[puckClock].getY() );
-                            redSwitcher.setCurrentText("1");
-                        }
-                    }
+                    if (maxScoreReached == false) {
+                        if (animationClock < 3) {//red pucks
+                            if (puckCycleList[animationClock].getY() < 540 && puckCycleList[animationClock].getY() > 440) {
+                                Log.d(TAG, "Red puck Y position testing within boundary: Puck :" + animationClock + " Y Pos+ " + puckCycleList[animationClock].getY());
+                                Log.d(TAG,"Red one points");
+                                redPlayerScore += 1;
+                                redSwitcher.setCurrentText(redPlayerScore.toString());
+                                playSound(R.raw.onepoint);
+                                animationClock++;
+                            }
+                            else if (puckCycleList[animationClock].getY() < 440 && puckCycleList[animationClock].getY() > 340) {
+                                Log.d(TAG, "Red puck Y position testing within boundary: Puck :" + animationClock + " Y Pos+ " + puckCycleList[animationClock].getY());
+                                Log.d(TAG,"Red  two points");
+                                redPlayerScore += 2;
+                                redSwitcher.setCurrentText(redPlayerScore.toString());
+                                playSound(R.raw.twopoints);
+                                animationClock++;
 
-                    if(puckClock >= 3 && puckClock < 6) {//blue pucks
-                        if (puckCycleList[puckClock].getY() < 1970 && puckCycleList[puckClock].getY() > 1850) {
-                            Log.d(TAG, "Puck Y position testing within boundary: Puck :" +puckClock+" Y Pos+ "+puckCycleList[puckClock].getY() );
-                            redSwitcher.setCurrentText("1");
+                            }
+                            else if (puckCycleList[animationClock].getY() < 340 && puckCycleList[animationClock].getY() > 240) {
+                                Log.d(TAG, "Red puck Y position testing within boundary: Puck :" + animationClock + " Y Pos+ " + puckCycleList[animationClock].getY());
+                                Log.d(TAG,"Red three points");
+                                redPlayerScore += 3;
+                                redSwitcher.setCurrentText(redPlayerScore.toString());
+                                playSound(R.raw.threepoints);
+                                animationClock++;
+                            }
+                            else{
+                                Log.d(TAG,"Red zero points");
+                                playSound(R.raw.zeropoints);
+                                animationClock++;
+                            }
                         }
-                        if (puckCycleList[puckClock].getY() < 1970 && puckCycleList[puckClock].getY() > 1850) {
-                            Log.d(TAG, "Puck Y position testing within boundary: Puck :" +puckClock+" Y Pos+ "+puckCycleList[puckClock].getY() );
-                            redSwitcher.setCurrentText("1");
-                        }
-                        if (puckCycleList[puckClock].getY() < 1970 && puckCycleList[puckClock].getY() > 1850) {
-                            Log.d(TAG, "Puck Y position testing within boundary: Puck :" +puckClock+" Y Pos+ "+puckCycleList[puckClock].getY() );
-                            redSwitcher.setCurrentText("1");
+
+                        if (animationClock >= 3 && animationClock < 6) {//blue pucks
+                            if (puckCycleList[animationClock].getY() < 540 && puckCycleList[animationClock].getY() > 440) {
+                                Log.d(TAG, "Blue puck Y position testing within boundary: Puck :" + animationClock + " Y Pos+ " + puckCycleList[animationClock].getY());
+                                Log.d(TAG,"Blue one point");
+                                bluePlayerScore += 1;
+                                blueSwitcher.setCurrentText(bluePlayerScore.toString());
+                                playSound(R.raw.onepoint);
+                                animationClock++;
+                            }
+                            else if (puckCycleList[animationClock].getY() < 440 && puckCycleList[animationClock].getY() > 340) {
+                                Log.d(TAG, "Blue puck Y position testing within boundary: Puck :" + animationClock + " Y Pos+ " + puckCycleList[animationClock].getY());
+                                Log.d(TAG,"Blue two points");
+                                bluePlayerScore += 2;
+                                blueSwitcher.setCurrentText(bluePlayerScore.toString());
+                                playSound(R.raw.twopoints);
+                                animationClock++;
+                            }
+                            else if (puckCycleList[animationClock].getY() < 340 && puckCycleList[animationClock].getY() > 240) {
+                                Log.d(TAG, "Blue puck Y position testing within boundary: Puck :" + animationClock + " Y Pos+ " + puckCycleList[animationClock].getY());
+                                Log.d(TAG,"Blue three points");
+                                bluePlayerScore += 3;
+                                blueSwitcher.setCurrentText(bluePlayerScore.toString());
+                                playSound(R.raw.threepoints);
+                                animationClock++;
+                            }
+                            else{
+                                Log.d(TAG,"Blue zero points");
+                                playSound(R.raw.zeropoints);
+                                animationClock++;
+                            }
                         }
                     }
                 }
@@ -336,3 +376,14 @@ public class NSBGameActivity extends AppCompatActivity {
 
         }
     }
+
+    private boolean maxScoreReached(){
+        if(redPlayerScore < maxScore && bluePlayerScore < maxScore){
+           maxScoreReached = false;
+            return false;
+        }
+        Log.d(TAG, "MAX SCORE REACHED");
+        maxScoreReached = true;
+        return true;
+    }
+
