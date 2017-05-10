@@ -46,7 +46,7 @@ public class NSBGameActivity extends AppCompatActivity {
     int puckClock = 0;
     int animationClock = 0; //keeps track of end of animations
     int maxDuration = 35000;
-    long cancelDuration = 1500; //This value actually ends the animation after x milliseconds.
+    long cancelDuration = 4500; //This value actually ends the animation after x milliseconds.
     ImageView redPuck1;
     ImageView redPuck2;
     ImageView redPuck3;
@@ -81,6 +81,7 @@ public class NSBGameActivity extends AppCompatActivity {
     float puckHeightHalf;
     double angleOfTable;
     boolean cancelnext = false;
+    int roundNum = 0;
 
     float oThreePointZoneBtm, oTwoPointZoneBtm, oOnePointZoneBtm, oTopOfTable; //original.
     float nThreePointZoneBtm, nTwoPointZoneBtm, nOnePointZoneBtm, nTopOfTable;
@@ -104,14 +105,14 @@ public class NSBGameActivity extends AppCompatActivity {
         redScoreText = (TextView) findViewById(R.id.redScoreText);
         blueScoreText.setText("0");
         redScoreText.setText("0");
-        blueScoreText.setTextSize(1, 60f);
-        redScoreText.setTextSize(1, 60f);
+      //  blueScoreText.setTextSize(1, 60f);    // I removed this, and put the values in the .XML
+     //   redScoreText.setTextSize(1, 60f);
         listenForTouchOnPuck();
         //Round cycle
         redPuck1.setClickable(true);
         playGame();
         //Orignal values of tables.
-        angleOfTable = 1.4339812335; // 1.4339 radians. I did some math. 1.433 = atan(1213/167)
+        angleOfTable = 1.4339812335; // 1.4339 radians. I did some math. 1.433 = atan(1213/167), used in the cheeky calculation to find if a puck is on or off the table.
         oTable = new floatPoint(750, 1334);
         oTopLeftTable = new floatPoint(193, 43);
         oTopRightTable = new floatPoint(552, 43);
@@ -120,8 +121,9 @@ public class NSBGameActivity extends AppCompatActivity {
         oThreePointZoneBtm = 100;
         oTwoPointZoneBtm = 155;
         oOnePointZoneBtm = 217;
-        // getPuckSpawn(); // Doesn't work
+
     }
+
 
     public void calculateDistance() {
         Log.d(TAG, "initial x pos: " + downXPOS);
@@ -359,9 +361,20 @@ public class NSBGameActivity extends AppCompatActivity {
                 puckCycleList[0].setClickable(true);
                 puckClock = 0;
                 animationClock = 0;
+                roundNum = roundNum + 1;
+                if (roundNum == 3) { // Reset the scoreboard after 3 rounds
+                    roundNum = 0;
+                    bluePlayerScore = 0;
+                    redPlayerScore = 0;
+                    redSwitcher.setCurrentText(redPlayerScore.toString());
+                    blueSwitcher.setCurrentText(redPlayerScore.toString());
+                    //endRoundAnimation(); //presumablly this exists
+                }
+
 
             }
         } ;
+
 
         public void endRound() {
             puckCycleList[puckClock - 1].setClickable(false);
@@ -399,7 +412,7 @@ public class NSBGameActivity extends AppCompatActivity {
             animatePuckProperties.playTogether(animY, animX);
             animatePuckProperties.setupStartValues();
             animatePuckArray[puckClock] = animatePuckProperties; // If you call animatePuckProperties.cancel() then every puck in motion will be cancled. But now this can individually cancel the puck.
-            animXArray[puckClock] = animX;
+            animXArray[puckClock] = animX; //This was an attempt to get more control over the animX/animY object, doesn't work as how you'd think it would. :/
             animYArray[puckClock] = animY;
 
             animXArray[puckClock].addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
@@ -418,15 +431,14 @@ public class NSBGameActivity extends AppCompatActivity {
 
                     }
                     else {
-                        //Log.d(TAG, "animY.getAnimatedValue() " + animY.getAnimatedValue());
                         if (findIfPuckCrossesTopTable( (float) animY.getAnimatedValue()) || findIfPuckCrossesBottomTable( (float) animY.getAnimatedValue())    ){
                             cancelnext = true;
                         }
-                        if ( findIfPuckCrossesMinimumX( (float) animX.getAnimatedValue())  ) {
+                //        if ( findIfPuckCrossesMinimumX( (float) animX.getAnimatedValue())  ) {
                             if ( findIfPuckCrossesTable( (float) animX.getAnimatedValue(), (float) animY.getAnimatedValue() )) { //If it Crosses the left or right of table.
                                 cancelnext = true;
                             }
-                        }
+                 //       }
                     }
                 }
             });
@@ -434,7 +446,6 @@ public class NSBGameActivity extends AppCompatActivity {
                 @Override
                 public void onAnimationCancel(Animator animation) {
                     super.onAnimationCancel(animation);
-                    Log.d(TAG, "Animation has been CANCELED!");
                 }
                 //works but needs fine tuning
                 @Override
@@ -543,23 +554,17 @@ public class NSBGameActivity extends AppCompatActivity {
     // This is a super smart way of passing a variable to runnable: ie, it's a super smart way of passing a variable's value at one moment even though it can change value in a few seconds
     // thanks to the internet, stackoverflow runnable-with-a-parameter
     private Runnable createCancelRunnable(final int currentpuckClock){
-        //Log.d(TAG, "Inside Runnable! !!!");
+
         Runnable mRunnable = new Runnable() {
             @Override
             public void run() {
-               // Log.d(TAG, "DOUBLE INSIDE Runnable! !!!");
-                //Log.d(TAG, "currentpuckClock = "+currentpuckClock);
-                //Log.d(TAG, "ABOUT TO INCREMENT ANIM CLOCK ");
-               // Log.d(TAG, "Prior to Animation clock increment = " +animationClock);
                 animatePuckArray[currentpuckClock].cancel();
-
             }
         };
         return mRunnable;
     }
 
     private void deanimatePuck() {
-        Log.d(TAG, "DEANIMATE PUCK !!!");
         myHandler.postDelayed(createCancelRunnable(puckClock), cancelDuration);
     }
 
